@@ -1,0 +1,10 @@
+<div class="snippet">
+  <h1>Latest snippets in <%= @lang %></h1>
+  <ol>
+    <% @snippets.each do | snippet | %>
+    <li><a href="/<%= snippet['id'] %>"><%= snippet['title'] %></a> (Posted: <%= snippet['created_at'].strftime('%a., %b.%-d, %Y at %l:%M%p') %>)</li>
+    <% end %>
+  </ol>
+  <br/>
+  <a href="/">Create new paste!</a>
+</div>
