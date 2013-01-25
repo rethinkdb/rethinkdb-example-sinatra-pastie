@@ -1,7 +1,7 @@
 # What is it #
 
-A simple [Pastie.org](http://pastie.org)-like web application showing how to use **RethinkDB as a backend for Sinatra applications**. 
-The app was inspired by Nick Plante's [toopaste](https://github.com/zapnap/toopaste) project.
+A simple [Pastie.org](http://pastie.org)-like web application inspired by Nick Plante's [toopaste](https://github.com/zapnap/toopaste) project
+showing how to use **RethinkDB as a backend for Sinatra applications**. 
 
 The app demos the following functionality:
 
