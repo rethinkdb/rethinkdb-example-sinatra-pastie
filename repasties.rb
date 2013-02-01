@@ -151,14 +151,14 @@ get '/lang/:lang' do
 end
 
 
-# List of languages for which syntax highlighting is supported
+# List of languages for which syntax highlighting is supported.
 SUPPORTED_LANGUAGES = ['Ruby', 'Python', 'Javascript', 'Bash', 'ActionScript', 
   'AppleScript', 'Awk', 'C', 'C++', 'Clojure', 
   'CoffeeScript', 'Lisp', 'Erlang', 'Fortran', 'Groovy',
   'Haskell', 'Io', 'Java', 'Lua', 'Objective-C', 
   'OCaml', 'Perl', 'Prolog', 'Scala', 'Smalltalk'].sort
 
-# A Sinatra helper to expose the list of languages to views
+# A Sinatra helper to expose the list of languages to views.
 helpers do
   def languages
     SUPPORTED_LANGUAGES
