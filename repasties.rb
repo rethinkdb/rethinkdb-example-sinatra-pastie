@@ -39,7 +39,8 @@ configure do
   end
 end
 
-# Making the RethinkDB `r` friendly shortcut available in the [request scope](http://www.sinatrarb.com/intro.html#Request/Instance%20Scope)
+# Making the RethinkDB `r` friendly shortcut available in the 
+# [request scope](http://www.sinatrarb.com/intro.html#Request/Instance%20Scope)
 # for methods `before`, `after`, and routes.
 module Sinatra
   class Application
@@ -75,7 +76,7 @@ after do
 end
 
 get '/' do
-  @snippet = Hash.new
+  @snippet = {}
   erb :new
 end
 
@@ -103,8 +104,8 @@ post '/' do
   result = @rdb_connection.run(r.table('snippets').insert(@snippet))
 
   # The `insert` operation returns a single object specifying the number
-  # of successfully created objects and their corresponding IDs:
-  # `{ "inserted": 1, "errors": 0, "generated_keys": ["fcb17a43-cda2-49f3-98ee-1efc1ac5631d"] }`
+  # of successfully created objects and their corresponding IDs
+  # `{"inserted": 1, "errors": 0, "generated_keys": ["fcb17a43-cda2-49f3-98ee-1efc1ac5631d"]}`
   if result['inserted'] == 1:
     redirect "/#{result['generated_keys'][0]}"
   else
@@ -137,7 +138,13 @@ end
 get '/lang/:lang' do
   @lang = params[:lang].downcase
   max_results = params[:limit] || 10
-  results = @rdb_connection.run(r.table('snippets').filter('lang' => @lang).pluck('id', 'title', 'created_at').order_by(r.desc('created_at')).limit(max_results))
+  results = @rdb_connection.run(
+    r.table('snippets')
+      .filter('lang' => @lang)
+      .pluck('id', 'title', 'created_at')
+      .order_by(r.desc('created_at'))
+      .limit(max_results)
+  )
   @snippets = results.to_a
   @snippets.each { |s| s['created_at'] = Time.at(s['created_at']) }
   erb :list
@@ -204,7 +211,7 @@ require 'net/http'
 
 def highlight_webservice(code, lang)
   url = URI.parse 'http://pygments.appspot.com/'
-  options = { 'lang' => lang, 'code' => code}
+  options = {'lang' => lang, 'code' => code}
   Net::HTTP.post_form(url, options).body
 end
 
