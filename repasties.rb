@@ -93,7 +93,7 @@ post '/' do
     erb :new
   end
 
-  if @snippet[:title].empty?:
+  if @snippet[:title].empty?
     @snippet[:title] = @snippet[:body].scan(/\w+/)[0..2].join(' ')
     erb :new
   end
@@ -106,7 +106,7 @@ post '/' do
   # The `insert` operation returns a single object specifying the number
   # of successfully created objects and their corresponding IDs
   # `{"inserted": 1, "errors": 0, "generated_keys": ["fcb17a43-cda2-49f3-98ee-1efc1ac5631d"]}`
-  if result['inserted'] == 1:
+  if result['inserted'] == 1
     redirect "/#{result['generated_keys'][0]}"
   else
     logger.error result
