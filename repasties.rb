@@ -17,6 +17,9 @@ RDB_CONFIG = {
   :db   => ENV['RDB_DB']   || 'repasties'
 }
 
+# A shortcut for accessing ReQL functions
+r = RethinkDB::RQL.new
+
 #### Setting up the database
 
 # The app will use a table `snippets` in the database defined by the
@@ -28,11 +31,11 @@ RDB_CONFIG = {
 # [`table_create`](http://www.rethinkdb.com/api/#rb:manipulating_tables-table_create) commands.
 configure do
   set :db, RDB_CONFIG[:db]
-  connection = RethinkDB::RQL.connect(RDB_CONFIG[:host], RDB_CONFIG[:port])
+  connection = RethinkDB::Connection.new(RDB_CONFIG[:host], RDB_CONFIG[:port])
   begin
-    connection.run(RethinkDB::RQL.db_create(RDB_CONFIG[:db]))
-    connection.run(RethinkDB::RQL.db(RDB_CONFIG[:db]).table_create('snippets'))
-  rescue Exception => err
+    r.db_create(RDB_CONFIG[:db]).run(connection)
+    r.db(RDB_CONFIG[:db]).table_create('snippets').run(connection)
+  rescue RethinkDB::RqlRuntimeError => err
     puts "Database `repasties` and table `snippets` already exist."
   ensure
     connection.close
@@ -101,7 +104,7 @@ post '/' do
   @snippet[:created_at] = Time.now.to_i
   @snippet[:formatted_body] = pygmentize(@snippet[:body], @snippet[:lang])
 
-  result = @rdb_connection.run(r.table('snippets').insert(@snippet))
+  result = r.table('snippets').insert(@snippet).run(@rdb_connection)
 
   # The `insert` operation returns a single object specifying the number
   # of successfully created objects and their corresponding IDs
@@ -119,7 +122,7 @@ end
 # GETing `/<snippet_id>`. To query the database for a single document by its ID, we use the
 # [`get`](http://www.rethinkdb.com/api/#rb:selecting_data-get) command.
 get '/:id' do
-  @snippet = @rdb_connection.run(r.table('snippets').get(params[:id]))
+  @snippet = r.table('snippets').get(params[:id]).run(@rdb_connection)
 
   if @snippet
     @snippet['created_at'] = Time.at(@snippet['created_at'])
@@ -138,13 +141,13 @@ end
 get '/lang/:lang' do
   @lang = params[:lang].downcase
   max_results = params[:limit] || 10
-  results = @rdb_connection.run(
-    r.table('snippets')
-      .filter('lang' => @lang)
-      .pluck('id', 'title', 'created_at')
-      .order_by(r.desc('created_at'))
-      .limit(max_results)
-  )
+  results = r.table('snippets').
+              filter('lang' => @lang).
+              pluck('id', 'title', 'created_at').
+              order_by(r.desc('created_at')).
+              limit(max_results).
+              run(@rdb_connection)
+              
   @snippets = results.to_a
   @snippets.each { |s| s['created_at'] = Time.at(s['created_at']) }
   erb :list
