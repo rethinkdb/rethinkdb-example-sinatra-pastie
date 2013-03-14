@@ -17,7 +17,7 @@ RDB_CONFIG = {
   :db   => ENV['RDB_DB']   || 'repasties'
 }
 
-# A shortcut for accessing ReQL functions
+# A friendlly shortcut for accessing ReQL functions
 r = RethinkDB::RQL.new
 
 #### Setting up the database
@@ -39,15 +39,6 @@ configure do
     puts "Database `repasties` and table `snippets` already exist."
   ensure
     connection.close
-  end
-end
-
-# Making the RethinkDB `r` friendly shortcut available in the 
-# [request scope](http://www.sinatrarb.com/intro.html#Request/Instance%20Scope)
-# for methods `before`, `after`, and routes.
-module Sinatra
-  class Application
-    include RethinkDB::Shortcuts
   end
 end
 
@@ -147,7 +138,7 @@ get '/lang/:lang' do
               order_by(r.desc('created_at')).
               limit(max_results).
               run(@rdb_connection)
-              
+
   @snippets = results.to_a
   @snippets.each { |s| s['created_at'] = Time.at(s['created_at']) }
   erb :list
