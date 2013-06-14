@@ -28,7 +28,7 @@ RDB_CONFIG = {
 # [`table_create`](http://www.rethinkdb.com/api/#rb:manipulating_tables-table_create) commands.
 configure do
   set :db, RDB_CONFIG[:db]
-  connection = RethinkDB::RQL.connect(RDB_CONFIG[:host], RDB_CONFIG[:port])
+  connection = RethinkDB::RQL.connect(:host => RDB_CONFIG[:host], :port => RDB_CONFIG[:port])
   begin
     connection.run(RethinkDB::RQL.db_create(RDB_CONFIG[:db]))
     connection.run(RethinkDB::RQL.db(RDB_CONFIG[:db]).table_create('snippets'))
