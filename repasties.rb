@@ -26,9 +26,9 @@ r = RethinkDB::RQL.new
 # environment variable `RDB_DB` (defaults to `repasties`).
 #
 # We'll create the database and the table here using 
-# [`db_create`](http://www.rethinkdb.com/api/#rb:manipulating_databases-db_create)
+# [`db_create`](http://www.rethinkdb.com/api/ruby/db_create/)
 # and
-# [`table_create`](http://www.rethinkdb.com/api/#rb:manipulating_tables-table_create) commands.
+# [`table_create`](http://www.rethinkdb.com/api/ruby/table_create/) commands.
 configure do
   set :db, RDB_CONFIG[:db]
   connection = RethinkDB::Connection.new(:host => RDB_CONFIG[:host], :port => RDB_CONFIG[:port])
@@ -48,8 +48,8 @@ end
 
 # The pattern we're using for managing database connections is to have **a connection per request**. 
 # We're using Sinatra's `before` and `after` for 
-# [opening a database connection](http://www.rethinkdb.com/api/#rb:accessing_rql-connect) and 
-# [closing it](http://www.rethinkdb.com/api/#rb:accessing_rql-close) respectively.
+# [opening a database connection](http://www.rethinkdb.com/api/ruby/connect/) and 
+# [closing it](http://www.rethinkdb.com/api/ruby/close/) respectively.
 before do
   begin
     # When openning a connection we can also specify the database:
@@ -60,7 +60,7 @@ before do
   end
 end
 
-# After each request we [close the database connection](http://www.rethinkdb.com/api/#rb:accessing_rql-close).
+# After each request we [close the database connection](http://www.rethinkdb.com/api/ruby/close/).
 after do
   begin
     @rdb_connection.close if @rdb_connection
@@ -76,7 +76,7 @@ end
 
 
 # We create a new snippet in response to a POST request using
-# [`table.insert`](http://www.rethinkdb.com/api/#rb:writing_data-insert).
+# [`table.insert`](http://www.rethinkdb.com/api/ruby/insert/).
 post '/' do
   @snippet = {
     :title => params[:snippet_title],
@@ -111,7 +111,7 @@ end
 # Every new snippet gets assigned automatically a unique ID. 
 # The browser can retrieve a specific snippet by 
 # GETing `/<snippet_id>`. To query the database for a single document by its ID, we use the
-# [`get`](http://www.rethinkdb.com/api/#rb:selecting_data-get) command.
+# [`get`](http://www.rethinkdb.com/api/ruby/get/) command.
 get '/:id' do
   @snippet = r.table('snippets').get(params[:id]).run(@rdb_connection)
 
@@ -124,9 +124,9 @@ get '/:id' do
 end
 
 # Retrieving the latest `max_results` (default 10) snippets by their language 
-# by chaining together [`filter`](http://www.rethinkdb.com/api/#rb:selecting_data-filter),
-# [`pluck`](http://www.rethinkdb.com/api/#rb:transformations-pluck), and
-# [`order_by`](http://www.rethinkdb.com/api/#rb:transformations-orderby). 
+# by chaining together [`filter`](http://www.rethinkdb.com/api/ruby/filter/),
+# [`pluck`](http://www.rethinkdb.com/api/ruby/pluck/), and
+# [`order_by`](http://www.rethinkdb.com/api/ruby/order_by/). 
 # All chained operations are executed on the database server and the results are
 # returned as a batched iterator.
 get '/lang/:lang' do
