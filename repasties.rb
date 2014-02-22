@@ -53,7 +53,7 @@ end
 before do
   begin
     # When openning a connection we can also specify the database:
-    @rdb_connection = r.connect(:host => RDB_CONFIG[:host], :port => RDB_CONFIG[:port], settings.db)
+    @rdb_connection = r.connect(:host => RDB_CONFIG[:host], :port => RDB_CONFIG[:port], :db => settings.db)
   rescue Exception => err
     logger.error "Cannot connect to RethinkDB database #{RDB_CONFIG[:host]}:#{RDB_CONFIG[:port]} (#{err.message})"
     halt 501, 'This page could look nicer, unfortunately the error is the same: database not available.'
