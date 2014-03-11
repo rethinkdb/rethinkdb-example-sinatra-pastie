@@ -31,12 +31,23 @@ r = RethinkDB::RQL.new
 # [`table_create`](http://www.rethinkdb.com/api/ruby/table_create/) commands.
 configure do
   set :db, RDB_CONFIG[:db]
-  connection = RethinkDB::Connection.new(:host => RDB_CONFIG[:host], :port => RDB_CONFIG[:port])
+  begin
+    connection = r.connect(:host => RDB_CONFIG[:host], :port => RDB_CONFIG[:port])
+  rescue Exception => err
+    puts "Cannot connect to RethinkDB database #{RDB_CONFIG[:host]}:#{RDB_CONFIG[:port]} (#{err.message})"
+    Process.exit(1)
+  end
+
   begin
     r.db_create(RDB_CONFIG[:db]).run(connection)
+  rescue RethinkDB::RqlRuntimeError => err
+    puts "Database `repasties` already exists."
+  end
+
+  begin
     r.db(RDB_CONFIG[:db]).table_create('snippets').run(connection)
   rescue RethinkDB::RqlRuntimeError => err
-    puts "Database `repasties` and table `snippets` already exist."
+    puts "Table `snippets` already exists."
   ensure
     connection.close
   end
