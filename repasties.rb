@@ -1,7 +1,8 @@
 #!/usr/local/bin/ruby -rubygems
 #
-# A simple [Pastie](http://pastie.org)-like app inspired by Nick Plante's [toopaste](https://github.com/zapnap/toopaste) project
-# showing how to use **RethinkDB as a backend for Sinatra applications**. 
+# A simple [Pastie](http://pastie.org)-like app inspired by Nick Plante's
+# [toopaste](https://github.com/zapnap/toopaste) project showing how to use
+# **RethinkDB as a backend for Sinatra applications**. 
 
 
 require 'sinatra'
@@ -17,7 +18,7 @@ RDB_CONFIG = {
   :db   => ENV['RDB_DB']   || 'repasties'
 }
 
-# A friendlly shortcut for accessing ReQL functions
+# A friendly shortcut for accessing ReQL functions
 r = RethinkDB::RQL.new
 
 #### Setting up the database
@@ -32,7 +33,8 @@ r = RethinkDB::RQL.new
 configure do
   set :db, RDB_CONFIG[:db]
   begin
-    connection = r.connect(:host => RDB_CONFIG[:host], :port => RDB_CONFIG[:port])
+    connection = r.connect(:host => RDB_CONFIG[:host],
+      :port => RDB_CONFIG[:port])
   rescue Exception => err
     puts "Cannot connect to RethinkDB database #{RDB_CONFIG[:host]}:#{RDB_CONFIG[:port]} (#{err.message})"
     Process.exit(1)
@@ -57,14 +59,15 @@ end
 #### Managing connections
 
 
-# The pattern we're using for managing database connections is to have **a connection per request**. 
-# We're using Sinatra's `before` and `after` for 
+# The pattern we're using for managing database connections is to have
+# **a connection per request**.  We're using Sinatra's `before` and `after` for 
 # [opening a database connection](http://www.rethinkdb.com/api/ruby/connect/) and 
 # [closing it](http://www.rethinkdb.com/api/ruby/close/) respectively.
 before do
   begin
-    # When openning a connection we can also specify the database:
-    @rdb_connection = r.connect(:host => RDB_CONFIG[:host], :port => RDB_CONFIG[:port], :db => settings.db)
+    # When opening a connection we can also specify the database:
+    @rdb_connection = r.connect(:host => RDB_CONFIG[:host], :port =>
+      RDB_CONFIG[:port], :db => settings.db)
   rescue Exception => err
     logger.error "Cannot connect to RethinkDB database #{RDB_CONFIG[:host]}:#{RDB_CONFIG[:port]} (#{err.message})"
     halt 501, 'This page could look nicer, unfortunately the error is the same: database not available.'
@@ -109,7 +112,7 @@ post '/' do
   result = r.table('snippets').insert(@snippet).run(@rdb_connection)
 
   # The `insert` operation returns a single object specifying the number
-  # of successfully created objects and their corresponding IDs
+  # of successfully created objects and their corresponding IDs.
   #
   # ```
   # {
@@ -128,9 +131,9 @@ post '/' do
   end
 end
 
-# Every new snippet gets assigned automatically a unique ID. 
-# The browser can retrieve a specific snippet by 
-# GETing `/<snippet_id>`. To query the database for a single document by its ID, we use the
+# Every new snippet automatically gets assigned a unique ID. The browser can
+# retrieve a specific snippet by GETing `/<snippet_id>`. To query the database
+# for a single document by its ID, we use the
 # [`get`](http://www.rethinkdb.com/api/ruby/get/) command.
 get '/:id' do
   @snippet = r.table('snippets').get(params[:id]).run(@rdb_connection)
@@ -166,8 +169,8 @@ end
 
 
 # List of languages for which syntax highlighting is supported.
-SUPPORTED_LANGUAGES = ['Ruby', 'Python', 'Javascript', 'Bash', 'ActionScript', 
-  'AppleScript', 'Awk', 'C', 'C++', 'Clojure', 
+SUPPORTED_LANGUAGES = ['Ruby', 'Python', 'Javascript', 'Bash',
+  'ActionScript', 'AppleScript', 'Awk', 'C', 'C++', 'Clojure', 
   'CoffeeScript', 'Lisp', 'Erlang', 'Fortran', 'Groovy',
   'Haskell', 'Io', 'Java', 'Lua', 'Objective-C', 
   'OCaml', 'Perl', 'Prolog', 'Scala', 'Smalltalk'].sort
@@ -180,9 +183,11 @@ helpers do
 end
 
 # Code is run through [Pygments](http://pygments.org/) for syntax
-# highlighting. If it's not installed, locally, use a webservice http://pygments.appspot.com/.
+# highlighting. If it's not installed, locally, use a webservice
+# http://pygments.appspot.com/.
 # (code inspired by [rocco.rb](http://rtomayko.github.com/rocco/))
-unless ENV['PATH'].split(':').any? { |dir| File.executable?("#{dir}/pygmentize") }
+unless ENV['PATH'].split(':').any? { |dir|
+    File.executable?("#{dir}/pygmentize") }
   warn "WARNING: Pygments not found. Using webservice."
   PYGMENTIZE=false
 else
@@ -204,7 +209,8 @@ end
 
 def highlight_pygmentize(code, lang)
   code_html = nil
-  open("|pygmentize -l #{lang} -f html -O encoding=utf-8,style=colorful,linenos=1", 'r+') do |fd|
+  open("|pygmentize -l #{lang} -f html -O encoding=utf-8,style=colorful,linenos=1",
+    'r+') do |fd|
     pid =
       fork {
         fd.close_read
