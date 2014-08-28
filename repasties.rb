@@ -16,8 +16,8 @@ if ENV['VCAP_SERVICES']
   services = JSON.parse(ENV['VCAP_SERVICES'])
   if service = services["rethinkdb"].first
     creds = service["credentials"]
-    rdb_config ||= {
-      :host => creds["hostname"],
+    rdb_config = {
+      :host => creds["hostname"] || creds["host"],
       :port => creds["port"],
       :db   => creds["name"] || 'repasties'
     }
