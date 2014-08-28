@@ -10,8 +10,11 @@ require 'rethinkdb'
 
 #### Connection details
 
-# We will use these settings later in the code to connect
-# to the RethinkDB server.
+# If the application is deployed to Cloud Foundry, then a
+# `$VCAP_SERVICES` environment variable is available (JSON format)
+# to describe the binding to a RethinkDB service instance.
+# If no `$VCAP_SERVICES` variable then application is not running
+# on Cloud Foundry.
 if ENV['VCAP_SERVICES']
   services = JSON.parse(ENV['VCAP_SERVICES'])
   if service = services["rethinkdb"].first
@@ -24,6 +27,9 @@ if ENV['VCAP_SERVICES']
   end
 end
 
+# If `rdb_config` not already setup, then look for environment
+# variables for location of RethinkDB server. Otherwise default
+# to a locally running server.
 rdb_config ||= {
   :host => ENV['RDB_HOST'] || 'localhost',
   :port => ENV['RDB_PORT'] || 28015,
