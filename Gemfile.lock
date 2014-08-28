@@ -21,5 +21,6 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
+  json
   rethinkdb
   sinatra
