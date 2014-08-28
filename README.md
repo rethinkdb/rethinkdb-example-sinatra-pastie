@@ -1,7 +1,7 @@
 # What is it #
 
 A simple [Pastie.org](http://pastie.org)-like web application inspired by Nick Plante's [toopaste](https://github.com/zapnap/toopaste) project
-showing how to use **RethinkDB as a backend for Sinatra applications**. 
+showing how to use **RethinkDB as a backend for Sinatra applications**.
 
 The app demos the following functionality:
 
@@ -25,8 +25,8 @@ Fork it and send us a pull request.
 
 ```
 git clone git://github.com/rethinkdb/rethinkdb-example-sinatra-pastie.git
-gem install sinatra
-gem install rethinkdb
+cd rethinkdb-example-sinatra-pastie
+bundle
 ```
 
 _Note_: If you don't have RethinkDB installed, you can follow [these instructions to get it up and running](http://www.rethinkdb.com/docs/install/).
@@ -36,7 +36,7 @@ _Note_: If you don't have RethinkDB installed, you can follow [these instruction
 Running a Sinatra app is as easy as:
 
 ```
-ruby repasties.rb
+rackup
 ```
 
 # Annotated Source Code #

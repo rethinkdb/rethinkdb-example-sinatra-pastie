@@ -2,7 +2,7 @@
 #
 # A simple [Pastie](http://pastie.org)-like app inspired by Nick Plante's
 # [toopaste](https://github.com/zapnap/toopaste) project showing how to use
-# **RethinkDB as a backend for Sinatra applications**. 
+# **RethinkDB as a backend for Sinatra applications**.
 
 
 require 'sinatra'
@@ -10,10 +10,28 @@ require 'rethinkdb'
 
 #### Connection details
 
-# We will use these settings later in the code to connect 
-# to the RethinkDB server.
-RDB_CONFIG = {
-  :host => ENV['RDB_HOST'] || 'localhost', 
+# If the application is deployed to Cloud Foundry, then a
+# `$VCAP_SERVICES` environment variable is available (JSON format)
+# to describe the binding to a RethinkDB service instance.
+# If no `$VCAP_SERVICES` variable then application is not running
+# on Cloud Foundry.
+if ENV['VCAP_SERVICES']
+  services = JSON.parse(ENV['VCAP_SERVICES'])
+  if service = services["rethinkdb"].first
+    creds = service["credentials"]
+    rdb_config = {
+      :host => creds["hostname"] || creds["host"],
+      :port => creds["port"],
+      :db   => creds["name"] || 'repasties'
+    }
+  end
+end
+
+# If `rdb_config` not already setup, then look for environment
+# variables for location of RethinkDB server. Otherwise default
+# to a locally running server.
+rdb_config ||= {
+  :host => ENV['RDB_HOST'] || 'localhost',
   :port => ENV['RDB_PORT'] || 28015,
   :db   => ENV['RDB_DB']   || 'repasties'
 }
@@ -26,28 +44,28 @@ r = RethinkDB::RQL.new
 # The app will use a table `snippets` in the database defined by the
 # environment variable `RDB_DB` (defaults to `repasties`).
 #
-# We'll create the database and the table here using 
+# We'll create the database and the table here using
 # [`db_create`](http://www.rethinkdb.com/api/ruby/db_create/)
 # and
 # [`table_create`](http://www.rethinkdb.com/api/ruby/table_create/) commands.
 configure do
-  set :db, RDB_CONFIG[:db]
+  set :db, rdb_config[:db]
   begin
-    connection = r.connect(:host => RDB_CONFIG[:host],
-      :port => RDB_CONFIG[:port])
+    connection = r.connect(:host => rdb_config[:host],
+      :port => rdb_config[:port])
   rescue Exception => err
-    puts "Cannot connect to RethinkDB database #{RDB_CONFIG[:host]}:#{RDB_CONFIG[:port]} (#{err.message})"
+    puts "Cannot connect to RethinkDB database #{rdb_config[:host]}:#{rdb_config[:port]} (#{err.message})"
     Process.exit(1)
   end
 
   begin
-    r.db_create(RDB_CONFIG[:db]).run(connection)
+    r.db_create(rdb_config[:db]).run(connection)
   rescue RethinkDB::RqlRuntimeError => err
     puts "Database `repasties` already exists."
   end
 
   begin
-    r.db(RDB_CONFIG[:db]).table_create('snippets').run(connection)
+    r.db(rdb_config[:db]).table_create('snippets').run(connection)
   rescue RethinkDB::RqlRuntimeError => err
     puts "Table `snippets` already exists."
   ensure
@@ -60,16 +78,16 @@ end
 
 
 # The pattern we're using for managing database connections is to have
-# **a connection per request**.  We're using Sinatra's `before` and `after` for 
-# [opening a database connection](http://www.rethinkdb.com/api/ruby/connect/) and 
+# **a connection per request**.  We're using Sinatra's `before` and `after` for
+# [opening a database connection](http://www.rethinkdb.com/api/ruby/connect/) and
 # [closing it](http://www.rethinkdb.com/api/ruby/close/) respectively.
 before do
   begin
     # When opening a connection we can also specify the database:
-    @rdb_connection = r.connect(:host => RDB_CONFIG[:host], :port =>
-      RDB_CONFIG[:port], :db => settings.db)
+    @rdb_connection = r.connect(:host => rdb_config[:host], :port =>
+      rdb_config[:port], :db => settings.db)
   rescue Exception => err
-    logger.error "Cannot connect to RethinkDB database #{RDB_CONFIG[:host]}:#{RDB_CONFIG[:port]} (#{err.message})"
+    logger.error "Cannot connect to RethinkDB database #{rdb_config[:host]}:#{rdb_config[:port]} (#{err.message})"
     halt 501, 'This page could look nicer, unfortunately the error is the same: database not available.'
   end
 end
@@ -146,10 +164,10 @@ get '/:id' do
   end
 end
 
-# Retrieving the latest `max_results` (default 10) snippets by their language 
+# Retrieving the latest `max_results` (default 10) snippets by their language
 # by chaining together [`filter`](http://www.rethinkdb.com/api/ruby/filter/),
 # [`pluck`](http://www.rethinkdb.com/api/ruby/pluck/), and
-# [`order_by`](http://www.rethinkdb.com/api/ruby/order_by/). 
+# [`order_by`](http://www.rethinkdb.com/api/ruby/order_by/).
 # All chained operations are executed on the database server and the results are
 # returned as a batched iterator.
 get '/lang/:lang' do
@@ -170,9 +188,9 @@ end
 
 # List of languages for which syntax highlighting is supported.
 SUPPORTED_LANGUAGES = ['Ruby', 'Python', 'Javascript', 'Bash',
-  'ActionScript', 'AppleScript', 'Awk', 'C', 'C++', 'Clojure', 
+  'ActionScript', 'AppleScript', 'Awk', 'C', 'C++', 'Clojure',
   'CoffeeScript', 'Lisp', 'Erlang', 'Fortran', 'Groovy',
-  'Haskell', 'Io', 'Java', 'Lua', 'Objective-C', 
+  'Haskell', 'Io', 'Java', 'Lua', 'Objective-C',
   'OCaml', 'Perl', 'Prolog', 'Scala', 'Smalltalk'].sort
 
 # A Sinatra helper to expose the list of languages to views.
@@ -241,7 +259,7 @@ end
 #
 # The RethinkDB server doesn't use a thread-per-connnection approach
 # so opening connections per request will not slow down your database.
-# 
+#
 # #### Fetching multiple rows: batched iterators ####
 #
 # When fetching multiple rows from a table, RethinkDB returns a
@@ -249,11 +267,11 @@ end
 # result. Once the end of the current batch is reached, a new batch is
 # automatically retrieved from the server. From a coding point of view
 # this is transparent:
-#   
+#
 #     r.table('todos').run(g.rdb_conn).each do |result|
 #         print result
 #     end
-#     
+#
 
 #### Credit
 
