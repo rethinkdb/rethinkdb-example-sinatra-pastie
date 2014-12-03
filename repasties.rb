@@ -20,9 +20,9 @@ if ENV['VCAP_SERVICES']
   if service = services["rethinkdb"].first
     creds = service["credentials"]
     rdb_config = {
-      :host => creds["hostname"] || creds["host"],
-      :port => creds["port"],
-      :db   => creds["name"] || 'repasties'
+      host: creds["hostname"] || creds["host"],
+      port: creds["port"],
+      db:   creds["name"] || 'repasties'
     }
   end
 end
@@ -31,9 +31,9 @@ end
 # variables for location of RethinkDB server. Otherwise default
 # to a locally running server.
 rdb_config ||= {
-  :host => ENV['RDB_HOST'] || 'localhost',
-  :port => ENV['RDB_PORT'] || 28015,
-  :db   => ENV['RDB_DB']   || 'repasties'
+  host: ENV['RDB_HOST'] || 'localhost',
+  port: ENV['RDB_PORT'] || 28015,
+  db: ENV['RDB_DB']   || 'repasties'
 }
 
 # A friendly shortcut for accessing ReQL functions
@@ -51,8 +51,7 @@ r = RethinkDB::RQL.new
 configure do
   set :db, rdb_config[:db]
   begin
-    connection = r.connect(:host => rdb_config[:host],
-      :port => rdb_config[:port])
+    connection = r.connect(host: rdb_config[:host], port: rdb_config[:port])
   rescue Exception => err
     puts "Cannot connect to RethinkDB database #{rdb_config[:host]}:#{rdb_config[:port]} (#{err.message})"
     Process.exit(1)
@@ -65,7 +64,7 @@ configure do
   end
 
   begin
-    r.db(rdb_config[:db]).table_create('snippets').run(connection)
+    r.db(rdb_config[:db]).table_create(:snippets).run(connection)
   rescue RethinkDB::RqlRuntimeError => err
     puts "Table `snippets` already exists."
   ensure
@@ -84,8 +83,7 @@ end
 before do
   begin
     # When opening a connection we can also specify the database:
-    @rdb_connection = r.connect(:host => rdb_config[:host], :port =>
-      rdb_config[:port], :db => settings.db)
+    @rdb_connection = r.connect(host: rdb_config[:host], port: rdb_config[:port], db: settings.db)
   rescue Exception => err
     logger.error "Cannot connect to RethinkDB database #{rdb_config[:host]}:#{rdb_config[:port]} (#{err.message})"
     halt 501, 'This page could look nicer, unfortunately the error is the same: database not available.'
@@ -111,9 +109,9 @@ end
 # [`table.insert`](http://www.rethinkdb.com/api/ruby/insert/).
 post '/' do
   @snippet = {
-    :title => params[:snippet_title],
-    :body  => params[:snippet_body],
-    :lang  => (params[:snippet_lang] || 'text').downcase,
+    title: params[:snippet_title],
+    body:  params[:snippet_body],
+    lang:  (params[:snippet_lang] || 'text').downcase,
   }
   if @snippet[:body].empty?
     erb :new
