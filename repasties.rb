@@ -125,7 +125,7 @@ post '/' do
   @snippet[:created_at] = Time.now.to_i
   @snippet[:formatted_body] = pygmentize(@snippet[:body], @snippet[:lang])
 
-  result = r.table('snippets').insert(@snippet).run(@rdb_connection)
+  result = r.table(:snippets).insert(@snippet).run(@rdb_connection)
 
   # The `insert` operation returns a single object specifying the number
   # of successfully created objects and their corresponding IDs.
@@ -152,7 +152,7 @@ end
 # for a single document by its ID, we use the
 # [`get`](http://www.rethinkdb.com/api/ruby/get/) command.
 get '/:id' do
-  @snippet = r.table('snippets').get(params[:id]).run(@rdb_connection)
+  @snippet = r.table(:snippets).get(params[:id]).run(@rdb_connection)
 
   if @snippet
     @snippet['created_at'] = Time.at(@snippet['created_at'])
@@ -171,10 +171,10 @@ end
 get '/lang/:lang' do
   @lang = params[:lang].downcase
   max_results = params[:limit] || 10
-  results = r.table('snippets').
-              filter('lang' => @lang).
-              pluck('id', 'title', 'created_at').
-              order_by(r.desc('created_at')).
+  results = r.table(:snippets).
+              filter(lang: @lang).
+              pluck(:id, :title, :created_at).
+              order_by(r.desc(:created_at)).
               limit(max_results).
               run(@rdb_connection)
 
