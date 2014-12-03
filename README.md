@@ -41,7 +41,7 @@ rackup
 
 # Annotated Source Code #
 
-After checking out the code, you can find the annotated source [here][].
+After checking out the code, you can find the annotated source [here](http://www.rethinkdb.com/docs/examples/sinatra-pastie/).
 
 # Credits #
 
