@@ -39,10 +39,6 @@ Running a Sinatra app is as easy as:
 rackup
 ```
 
-# Annotated Source Code #
-
-After checking out the code, you can find the annotated source [here][].
-
 # Credits #
 
 * This sample app was inspired by Nick Plante's [toopaste](https://github.com/zapnap/toopaste) project.
