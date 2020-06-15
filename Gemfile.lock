@@ -3,7 +3,7 @@ GEM
   specs:
     json (1.8.1)
     rack (1.6.13)
-    rack-protection (1.5.2)
+    rack-protection (1.5.5)
       rack
     rethinkdb (1.11.0.2)
       json
