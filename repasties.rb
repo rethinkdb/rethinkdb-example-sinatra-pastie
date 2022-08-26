@@ -20,9 +20,9 @@ if ENV['VCAP_SERVICES']
   if service = services["rethinkdb"].first
     creds = service["credentials"]
     rdb_config = {
-      :host => creds["hostname"] || creds["host"],
-      :port => creds["port"],
-      :db   => creds["name"] || 'repasties'
+      host: creds["hostname"] || creds["host"],
+      port: creds["port"],
+      db:   creds["name"] || 'repasties'
     }
   end
 end
@@ -31,9 +31,9 @@ end
 # variables for location of RethinkDB server. Otherwise default
 # to a locally running server.
 rdb_config ||= {
-  :host => ENV['RDB_HOST'] || 'localhost',
-  :port => ENV['RDB_PORT'] || 28015,
-  :db   => ENV['RDB_DB']   || 'repasties'
+  host: ENV['RDB_HOST'] || 'localhost',
+  port: ENV['RDB_PORT'] || 28015,
+  db: ENV['RDB_DB']   || 'repasties'
 }
 
 # A friendly shortcut for accessing ReQL functions
@@ -49,12 +49,10 @@ r = RethinkDB::RQL.new
 # and
 # [`table_create`](http://www.rethinkdb.com/api/ruby/table_create/) commands.
 configure do
-  set :db, rdb_config[:db]
   begin
-    connection = r.connect(:host => rdb_config[:host],
-      :port => rdb_config[:port])
+    connection = r.connect(host: rdb_config[:host], port: rdb_config[:port])
   rescue Exception => err
-    puts "Cannot connect to RethinkDB database #{rdb_config[:host]}:#{rdb_config[:port]} (#{err.message})"
+    puts "Cannot connect to RethinkDB #{rdb_config[:host]}:#{rdb_config[:port]} (#{err.message})"
     Process.exit(1)
   end
 
@@ -65,7 +63,7 @@ configure do
   end
 
   begin
-    r.db(rdb_config[:db]).table_create('snippets').run(connection)
+    r.db(rdb_config[:db]).table_create(:snippets).run(connection)
   rescue RethinkDB::RqlRuntimeError => err
     puts "Table `snippets` already exists."
   ensure
@@ -84,10 +82,9 @@ end
 before do
   begin
     # When opening a connection we can also specify the database:
-    @rdb_connection = r.connect(:host => rdb_config[:host], :port =>
-      rdb_config[:port], :db => settings.db)
+    @rdb_connection = r.connect(host: rdb_config[:host], port: rdb_config[:port], db: rdb_config[:db])
   rescue Exception => err
-    logger.error "Cannot connect to RethinkDB database #{rdb_config[:host]}:#{rdb_config[:port]} (#{err.message})"
+    logger.error "Cannot connect to RethinkDB database `#{rdb_config[:db]}` #{rdb_config[:host]}:#{rdb_config[:port]} (#{err.message})"
     halt 501, 'This page could look nicer, unfortunately the error is the same: database not available.'
   end
 end
@@ -111,9 +108,9 @@ end
 # [`table.insert`](http://www.rethinkdb.com/api/ruby/insert/).
 post '/' do
   @snippet = {
-    :title => params[:snippet_title],
-    :body  => params[:snippet_body],
-    :lang  => (params[:snippet_lang] || 'text').downcase,
+    title: params[:snippet_title],
+    body:  params[:snippet_body],
+    lang:  (params[:snippet_lang] || 'text').downcase,
   }
   if @snippet[:body].empty?
     erb :new
@@ -127,7 +124,7 @@ post '/' do
   @snippet[:created_at] = Time.now.to_i
   @snippet[:formatted_body] = pygmentize(@snippet[:body], @snippet[:lang])
 
-  result = r.table('snippets').insert(@snippet).run(@rdb_connection)
+  result = r.table(:snippets).insert(@snippet).run(@rdb_connection)
 
   # The `insert` operation returns a single object specifying the number
   # of successfully created objects and their corresponding IDs.
@@ -154,7 +151,7 @@ end
 # for a single document by its ID, we use the
 # [`get`](http://www.rethinkdb.com/api/ruby/get/) command.
 get '/:id' do
-  @snippet = r.table('snippets').get(params[:id]).run(@rdb_connection)
+  @snippet = r.table(:snippets).get(params[:id]).run(@rdb_connection)
 
   if @snippet
     @snippet['created_at'] = Time.at(@snippet['created_at'])
@@ -173,10 +170,10 @@ end
 get '/lang/:lang' do
   @lang = params[:lang].downcase
   max_results = params[:limit] || 10
-  results = r.table('snippets').
-              filter('lang' => @lang).
-              pluck('id', 'title', 'created_at').
-              order_by(r.desc('created_at')).
+  results = r.table(:snippets).
+              filter(lang: @lang).
+              pluck(:id, :title, :created_at).
+              order_by(r.desc(:created_at)).
               limit(max_results).
               run(@rdb_connection)
 
